@@ -29,7 +29,10 @@ const LoginAcc = () => {
             />
 
             <div className="text-right">
-              <a href="#" className="text-indigo-600 text-sm hover:underline">
+              <a
+                href="adminDash"
+                className="text-indigo-600 text-sm hover:underline"
+              >
                 Forgot Password?
               </a>
             </div>

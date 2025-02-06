@@ -38,28 +38,29 @@ export function Sidebar({ isOpen, toggleSidebar }) {
               <span>👥</span>
               {isOpen && <span>Accounts</span>}
             </div>
-            {isAccountsOpen && ( // Only show submenus when Accounts is open
-              <ul className="pl-8 mt-2 space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center p-2 space-x-2 hover:bg-blue-700 rounded-md"
-                  >
-                    <span>👤</span>
-                    <span>Customer</span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center p-2 space-x-2 hover:bg-blue-700 rounded-md"
-                  >
-                    <span>👤</span>
-                    <span>Staff</span>
-                  </a>
-                </li>
-              </ul>
-            )}
+            {isAccountsOpen &&
+              isOpen && ( // Only show submenus when Accounts is open and sidebar is open
+                <ul className="pl-8 mt-2 space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="flex items-center p-2 space-x-2 hover:bg-blue-700 rounded-md"
+                    >
+                      <span>👤</span>
+                      <span>Customer</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="flex items-center p-2 space-x-2 hover:bg-blue-700 rounded-md"
+                    >
+                      <span>👤</span>
+                      <span>Staff</span>
+                    </a>
+                  </li>
+                </ul>
+              )}
           </li>
           <li className="mx-2 hover:bg-blue-800 rounded-md">
             <a href="#" className="flex items-center p-3 space-x-2">

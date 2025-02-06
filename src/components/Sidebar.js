@@ -1,15 +1,17 @@
-// components/Sidebar.js
 "use client";
 import { useState } from "react";
 
 export function Sidebar({ isOpen, toggleSidebar }) {
+  const [isAccountsOpen, setIsAccountsOpen] = useState(false);
+
   return (
     <div
-      className={`fixed h-screen bg-blue-900 text-white transition-all duration-300 ${
+      className={`fixed top-0 left-0 h-screen bg-blue-900 text-white transition-all duration-300 ${
         isOpen ? "w-64" : "w-20"
       }`}
     >
       <div className="flex items-center p-4 space-x-2">
+        {/* Logo with top margin to avoid being covered by the top bar */}
         <img src="/logo.png" alt="Logo" className="w-10 h-10" />
         {isOpen && (
           <h1 className="text-xl font-semibold">
@@ -28,12 +30,15 @@ export function Sidebar({ isOpen, toggleSidebar }) {
               {isOpen && <span>Dashboard</span>}
             </a>
           </li>
-          <li className="group mx-2 hover:bg-blue-800 rounded-md">
-            <div className="flex items-center p-3 space-x-2 cursor-pointer">
+          <li className="mx-2 hover:bg-blue-800 rounded-md">
+            <div
+              className="flex items-center p-3 space-x-2 cursor-pointer"
+              onClick={() => setIsAccountsOpen(!isAccountsOpen)} // Toggle Accounts
+            >
               <span>👥</span>
               {isOpen && <span>Accounts</span>}
             </div>
-            {isOpen && (
+            {isAccountsOpen && ( // Only show submenus when Accounts is open
               <ul className="pl-8 mt-2 space-y-2">
                 <li>
                   <a

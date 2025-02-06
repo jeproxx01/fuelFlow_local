@@ -106,15 +106,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminManage-truck"
-                ? "bg-gray-500"
-                : "hover:bg-blue-800"
+              pathname === "/adminTruck" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a
-              href="/adminManage-truck"
-              className="flex items-center p-3 space-x-2"
-            >
+            <a href="/adminTruck" className="flex items-center p-3 space-x-2">
               <span>🚚</span>
               {isOpen && <span>Truck</span>}
             </a>
@@ -122,10 +117,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/orders" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/adminOrder" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a href="/orders" className="flex items-center p-3 space-x-2">
+            <a href="/adminOrder" className="flex items-center p-3 space-x-2">
               <span>📦</span>
               {isOpen && <span>Orders</span>}
             </a>
@@ -133,10 +128,15 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/inventory" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/adminInventory"
+                ? "bg-gray-500"
+                : "hover:bg-blue-800"
             }`}
           >
-            <a href="/inventory" className="flex items-center p-3 space-x-2">
+            <a
+              href="/adminInventory"
+              className="flex items-center p-3 space-x-2"
+            >
               <span>🛢️</span>
               {isOpen && <span>Inventory</span>}
             </a>
@@ -144,23 +144,12 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/reports" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/adminReports" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a href="/reports" className="flex items-center p-3 space-x-2">
+            <a href="/adminReports" className="flex items-center p-3 space-x-2">
               <span>📊</span>
               {isOpen && <span>Reports</span>}
-            </a>
-          </li>
-
-          <li
-            className={`mx-2 rounded-md ${
-              pathname === "/feedback" ? "bg-gray-500" : "hover:bg-blue-800"
-            }`}
-          >
-            <a href="/feedback" className="flex items-center p-3 space-x-2">
-              <span>💬</span>
-              {isOpen && <span>Feedback</span>}
             </a>
           </li>
         </ul>

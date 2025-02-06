@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function Topbar({ toggleSidebar, isSidebarOpen }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

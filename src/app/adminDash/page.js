@@ -1,10 +1,26 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Automatically collapse the sidebar on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false); // Automatically shrink sidebar on mobile
+      } else {
+        setIsSidebarOpen(true); // Expand sidebar on larger screens
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">

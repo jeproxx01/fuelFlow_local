@@ -38,8 +38,7 @@ export function Sidebar({ isOpen, toggleSidebar }) {
               <span>👥</span>
               {isOpen && <span>Accounts</span>}
             </div>
-            {/* Only show submenus when Accounts is open and Sidebar is not shrunk */}
-            {isAccountsOpen && isOpen && (
+            {isAccountsOpen && ( // Only show submenus when Accounts is open
               <ul className="pl-8 mt-2 space-y-2">
                 <li>
                   <a

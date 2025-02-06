@@ -90,12 +90,33 @@ export function Sidebar({ isOpen, toggleSidebar }) {
           {/* Other Menu Items */}
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/fuels" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/adminManage-fuel"
+                ? "bg-gray-500"
+                : "hover:bg-blue-800"
             }`}
           >
-            <a href="/fuels" className="flex items-center p-3 space-x-2">
+            <a
+              href="/adminManage-fuel"
+              className="flex items-center p-3 space-x-2"
+            >
               <span>⛽</span>
-              {isOpen && <span>Fuels</span>}
+              {isOpen && <span>Fuel</span>}
+            </a>
+          </li>
+
+          <li
+            className={`mx-2 rounded-md ${
+              pathname === "/adminManage-truck"
+                ? "bg-gray-500"
+                : "hover:bg-blue-800"
+            }`}
+          >
+            <a
+              href="/adminManage-truck"
+              className="flex items-center p-3 space-x-2"
+            >
+              <span>🚚</span>
+              {isOpen && <span>Truck</span>}
             </a>
           </li>
 

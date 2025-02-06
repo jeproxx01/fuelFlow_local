@@ -17,7 +17,10 @@ export default function Home() {
           isSidebarOpen ? "ml-64" : "ml-20"
         }`}
       >
-        <Topbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Topbar
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+        />
         <div className="p-6 mt-16">
           {/* Grid structure for responsiveness */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

@@ -1,11 +1,15 @@
 "use client";
 import { useState } from "react";
 
-export function Topbar({ toggleSidebar }) {
+export function Topbar({ toggleSidebar, isSidebarOpen }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div className="fixed top-0 left-64 right-0 h-16 bg-gray-200 flex items-center justify-between px-6 transition-all duration-300">
+    <div
+      className={`fixed top-0 left-0 right-0 h-16 bg-gray-200 flex items-center justify-between px-6 transition-all duration-300 ${
+        isSidebarOpen ? "ml-64" : "ml-20"
+      }`}
+    >
       <button onClick={toggleSidebar} className="text-2xl">
         ≡
       </button>

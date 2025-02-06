@@ -9,8 +9,8 @@ export function Sidebar({ isOpen, toggleSidebar }) {
   // Expand Accounts menu if inside the Accounts section
   useEffect(() => {
     if (
-      pathname.includes("/adminviewcustomer") ||
-      pathname.includes("/adminviewstaff")
+      pathname.includes("/adminView-customer") ||
+      pathname.includes("/adminView-staff")
     ) {
       setIsAccountsOpen(true);
     }
@@ -72,9 +72,9 @@ export function Sidebar({ isOpen, toggleSidebar }) {
                 {/* Staff */}
                 <li>
                   <a
-                    href="/adminView-"
+                    href="/adminView-staff"
                     className={`flex items-center p-2 space-x-2 rounded-md ${
-                      pathname === "/adminView-"
+                      pathname === "/adminView-staff"
                         ? "bg-blue-700"
                         : "hover:bg-blue-700"
                     }`}

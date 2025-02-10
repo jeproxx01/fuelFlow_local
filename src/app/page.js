@@ -4,43 +4,45 @@ import Navbar from "@/components/homepage/Navbar";
 import Footer from "@/components/homepage/Footer";
 
 const LoginSection = () => {
+  const roles = [
+    {
+      title: "Admin",
+      desc: "Manages system settings, user accounts, and reports.",
+      href: "/admin/login",
+    },
+    {
+      title: "Office Staff",
+      desc: "Processes orders, manages customer accounts, and coordinates deliveries.",
+      href: "/office-staff/login",
+    },
+    {
+      title: "Depot Staff",
+      desc: "Handles fuel inventory, dispatches deliveries, and ensures compliance.",
+      href: "/depot-staff/login",
+    },
+    {
+      title: "Gas Station Owner",
+      desc: "Places orders, tracks deliveries, and manages station inventory.",
+      href: "/gas-station-owner/login",
+    },
+    {
+      title: "Gas Station Staff",
+      desc: "Receives deliveries, updates inventory.",
+      href: "/gas-station-staff/login",
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Navbar />
 
       {/* Main Content */}
       <main className="flex-grow max-w-6xl mx-auto px-4 py-20 md:py-32">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              title: "Admin",
-              desc: "Manages system settings, user accounts, and reports.",
-              href: "/admin/login",
-            },
-            {
-              title: "Office Staff",
-              desc: "Processes orders, manages customer accounts, and coordinates deliveries.",
-              href: "/office-staff/login",
-            },
-            {
-              title: "Depot Staff",
-              desc: "Handles fuel inventory, dispatches deliveries, and ensures compliance.",
-              href: "/depot-staff/login",
-            },
-            {
-              title: "Gas Station Owner",
-              desc: "Places orders, tracks deliveries, and manages station inventory.",
-              href: "/gas-station-owner/login",
-            },
-            {
-              title: "Gas Station Staff",
-              desc: "Receives deliveries, updates inventory, and ensures proper fuel handling.",
-              href: "/gas-station-staff/login",
-            },
-          ].map((role, index) => (
+        <div className="flex flex-wrap justify-center gap-6">
+          {roles.map((role, index) => (
             <div
               key={index}
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow w-80"
             >
               <h2 className="text-lg font-semibold mb-3 flex justify-center">
                 {role.title}

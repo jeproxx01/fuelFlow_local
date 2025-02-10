@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { Topbar } from "@/components/Topbar";
+import { Sidebar } from "@/components/admin/Sidebar";
+import { Topbar } from "@/components/admin/Topbar";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

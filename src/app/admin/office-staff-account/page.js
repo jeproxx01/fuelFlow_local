@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { Topbar } from "@/components/Topbar";
+import { Sidebar } from "@/components/admin/Sidebar";
+import { Topbar } from "@/components/admin/Topbar";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -39,7 +39,7 @@ export default function Home() {
         />
         <div className="p-6 mt-16">
           <header className="flex justify-between items-center bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">Accounts - (Staff)</h2>
+            <h2 className="text-xl font-semibold">Accounts - (Office Staff)</h2>
           </header>
 
           <div className="mt-4 bg-white p-4 rounded-lg shadow-md">

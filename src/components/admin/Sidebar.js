@@ -9,8 +9,8 @@ export function Sidebar({ isOpen, toggleSidebar }) {
   // Expand Accounts menu if inside the Accounts section
   useEffect(() => {
     if (
-      pathname.includes("/adminView-customer") ||
-      pathname.includes("/adminView-staff")
+      pathname.includes("/admin/office-staff-account") ||
+      pathname.includes("/admin/depot-staff-account")
     ) {
       setIsAccountsOpen(true);
     }
@@ -35,10 +35,15 @@ export function Sidebar({ isOpen, toggleSidebar }) {
           {/* Dashboard */}
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminDash" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/admin/dashboard"
+                ? "bg-gray-500"
+                : "hover:bg-blue-800"
             }`}
           >
-            <a href="/adminDash" className="flex items-center p-3 space-x-2">
+            <a
+              href="/admin/dashboard"
+              className="flex items-center p-3 space-x-2"
+            >
               <span>🏠</span>
               {isOpen && <span>Dashboard</span>}
             </a>
@@ -55,32 +60,32 @@ export function Sidebar({ isOpen, toggleSidebar }) {
             </div>
             {isAccountsOpen && isOpen && (
               <ul className="pl-8 mt-2 space-y-2">
-                {/* Customer */}
+                {/* office */}
                 <li>
                   <a
-                    href="/adminView-customer"
+                    href="/admin/office-staff-account"
                     className={`flex items-center p-2 space-x-2 rounded-md ${
-                      pathname === "/adminView-customer"
+                      pathname === "/admin/office-staff-account"
                         ? "bg-blue-700"
                         : "hover:bg-blue-700"
                     }`}
                   >
                     <span>👤</span>
-                    <span>Customer</span>
+                    <span>Office Staff</span>
                   </a>
                 </li>
-                {/* Staff */}
+                {/* depot */}
                 <li>
                   <a
-                    href="/adminView-staff"
+                    href="/admin/depot-staff-account"
                     className={`flex items-center p-2 space-x-2 rounded-md ${
-                      pathname === "/adminView-staff"
+                      pathname === "/admin/depot-staff-account"
                         ? "bg-blue-700"
                         : "hover:bg-blue-700"
                     }`}
                   >
                     <span>👤</span>
-                    <span>Staff</span>
+                    <span>Depot Staff</span>
                   </a>
                 </li>
               </ul>
@@ -90,15 +95,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
           {/* Other Menu Items */}
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminManage-fuel"
-                ? "bg-gray-500"
-                : "hover:bg-blue-800"
+              pathname === "/admin/fuel" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a
-              href="/adminManage-fuel"
-              className="flex items-center p-3 space-x-2"
-            >
+            <a href="/admin/fuel" className="flex items-center p-3 space-x-2">
               <span>⛽</span>
               {isOpen && <span>Fuel</span>}
             </a>
@@ -106,10 +106,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminTruck" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/admin/truck" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a href="/adminTruck" className="flex items-center p-3 space-x-2">
+            <a href="/admin/truck" className="flex items-center p-3 space-x-2">
               <span>🚚</span>
               {isOpen && <span>Truck</span>}
             </a>
@@ -117,10 +117,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminOrder" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/admin/order" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a href="/adminOrder" className="flex items-center p-3 space-x-2">
+            <a href="/admin/order" className="flex items-center p-3 space-x-2">
               <span>📦</span>
               {isOpen && <span>Orders</span>}
             </a>
@@ -128,13 +128,13 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminInventory"
+              pathname === "/admin/inventory"
                 ? "bg-gray-500"
                 : "hover:bg-blue-800"
             }`}
           >
             <a
-              href="/adminInventory"
+              href="/admin/inventory"
               className="flex items-center p-3 space-x-2"
             >
               <span>🛢️</span>
@@ -144,10 +144,10 @@ export function Sidebar({ isOpen, toggleSidebar }) {
 
           <li
             className={`mx-2 rounded-md ${
-              pathname === "/adminReports" ? "bg-gray-500" : "hover:bg-blue-800"
+              pathname === "/admin/report" ? "bg-gray-500" : "hover:bg-blue-800"
             }`}
           >
-            <a href="/adminReports" className="flex items-center p-3 space-x-2">
+            <a href="/admin/report" className="flex items-center p-3 space-x-2">
               <span>📊</span>
               {isOpen && <span>Reports</span>}
             </a>

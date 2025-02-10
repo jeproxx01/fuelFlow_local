@@ -14,27 +14,40 @@ const LoginSection = () => {
           {[
             {
               title: "Admin",
-              desc: "Manage system settings, user accounts, and view reports.",
+              desc: "Manages system settings, user accounts, and reports.",
+              href: "/admin/login",
             },
             {
-              title: "Staff",
-              desc: "Manage deliveries, inventory, and gas station owner orders.",
+              title: "Office Staff",
+              desc: "Processes orders, manages customer accounts, and coordinates deliveries.",
+              href: "/office-staff/login",
             },
             {
-              title: "Gas station owner",
-              desc: "Place orders, track deliveries, and manage your account.",
+              title: "Depot Staff",
+              desc: "Handles fuel inventory, dispatches deliveries, and ensures compliance.",
+              href: "/depot-staff/login",
             },
-            { title: "Delivery Guy", desc: "Deliveries" },
-            { title: "Depo", desc: "Depo management." },
+            {
+              title: "Gas Station Owner",
+              desc: "Places orders, tracks deliveries, and manages station inventory.",
+              href: "/gas-station-owner/login",
+            },
+            {
+              title: "Gas Station Staff",
+              desc: "Receives deliveries, updates inventory, and ensures proper fuel handling.",
+              href: "/gas-station-staff/login",
+            },
           ].map((role, index) => (
             <div
               key={index}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
-              <h2 className="text-lg font-semibold mb-3">{role.title}</h2>
+              <h2 className="text-lg font-semibold mb-3 flex justify-center">
+                {role.title}
+              </h2>
               <p className="text-gray-600 mb-4">{role.desc}</p>
               <a
-                href="#"
+                href={role.href}
                 className="block bg-red-500 text-white px-4 py-2 rounded-lg text-center hover:bg-red-600"
               >
                 Login

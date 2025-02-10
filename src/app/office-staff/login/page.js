@@ -27,23 +27,23 @@ const LoginAcc = () => {
               required
               className="w-full p-3 border border-gray-300 rounded-lg"
             />
-
             <div className="text-right">
-              <a
-                href="adminDash"
-                className="text-indigo-600 text-sm hover:underline"
-              >
+              <a href="#" className="text-indigo-600 text-sm hover:underline">
                 Forgot Password?
               </a>
             </div>
-
             <button
               type="submit"
               className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600"
             >
               Login
             </button>
-
+            <a
+              className="flex justify-center items-center hover:underline"
+              href="/"
+            >
+              Back
+            </a>
             <div className="mt-4">
               {/* ReCAPTCHA (visible in production only) */}
               <div
@@ -52,13 +52,6 @@ const LoginAcc = () => {
               ></div>
             </div>
           </form>
-
-          <p className="text-center mt-4 text-sm">
-            Don't have an account?{" "}
-            <a href="adminCreate" className="text-indigo-600 hover:underline">
-              Create Account
-            </a>
-          </p>
         </div>
       </div>
 

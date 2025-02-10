@@ -24,23 +24,13 @@ const Navbar = () => {
           </h1>
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6">
+        {/* Desktop Menu - Fully Centered */}
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 space-x-6">
           {menuItems.map((item, index) => (
             <a key={index} href="#" className="hover:underline">
               {item}
             </a>
           ))}
-        </div>
-
-        {/*Signup Button */}
-        <div className="hidden md:flex space-x-4 ml-4">
-          <a
-            href="#"
-            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg"
-          >
-            Signup
-          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -52,29 +42,15 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Centered */}
       {menuOpen && (
-        <div className="md:hidden mt-4 pb-4">
+        <div className="md:hidden mt-4 pb-4 flex justify-center">
           <div className="flex flex-col items-center space-y-4">
             {menuItems.map((item, index) => (
               <a key={index} href="#" className="hover:underline">
                 {item}
               </a>
             ))}
-            <div className="flex flex-col space-y-2 w-full px-4">
-              <a
-                href="adminLog"
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-center"
-              >
-                Login
-              </a>
-              <a
-                href="adminCreate"
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-center"
-              >
-                Signup
-              </a>
-            </div>
           </div>
         </div>
       )}

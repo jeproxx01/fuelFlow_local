@@ -38,8 +38,10 @@ export default function Home() {
           isSidebarOpen={isSidebarOpen}
         />
         <div className="p-6 mt-16">
-          <header className="flex justify-between items-center bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">Accounts - (Office Staff)</h2>
+          <header className="flex justify-center items-center bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold ">
+              Accounts - (Office Staff)
+            </h2>
           </header>
 
           <div className="mt-4 bg-white p-4 rounded-lg shadow-md">

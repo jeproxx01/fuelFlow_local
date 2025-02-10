@@ -42,7 +42,7 @@ export default function ManageTruck() {
                 className="bg-white p-6 rounded-lg shadow-md text-center"
               >
                 <h2 className="text-lg font-semibold mb-2">{truck}</h2>
-                <button className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700">
                   Edit Truck Details
                 </button>
               </div>

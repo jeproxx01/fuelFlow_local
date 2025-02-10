@@ -38,7 +38,7 @@ export default function Home() {
           isSidebarOpen={isSidebarOpen}
         />
         <div className="p-6 mt-16">
-          <header className="flex justify-between items-center bg-white p-4 rounded-lg shadow-md">
+          <header className="flex justify-center items-center bg-white p-4 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold">Accounts - (Depot Staff)</h2>
           </header>
 

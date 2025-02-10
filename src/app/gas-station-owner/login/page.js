@@ -29,10 +29,7 @@ const LoginAcc = () => {
             />
 
             <div className="text-right">
-              <a
-                href="adminDash"
-                className="text-indigo-600 text-sm hover:underline"
-              >
+              <a href="#" className="text-indigo-600 text-sm hover:underline">
                 Forgot Password?
               </a>
             </div>
@@ -55,10 +52,20 @@ const LoginAcc = () => {
 
           <p className="text-center mt-4 text-sm">
             Don't have an account?{" "}
-            <a href="adminCreate" className="text-indigo-600 hover:underline">
+            <a
+              href="/gas-station-owner/create-account"
+              className="text-indigo-600 hover:underline"
+            >
               Create Account
             </a>
           </p>
+
+          <a
+            className="flex justify-center items-center hover:underline mt-5"
+            href="/"
+          >
+            Back
+          </a>
         </div>
       </div>
 

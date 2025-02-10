@@ -59,6 +59,14 @@ const LoginAcc = () => {
               Create Account
             </a>
           </p>
+          <div>
+            <a
+              className="flex justify-center items-center hover:underline mt-5"
+              href="/"
+            >
+              Back
+            </a>
+          </div>
         </div>
       </div>
 

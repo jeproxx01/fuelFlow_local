@@ -47,7 +47,10 @@ const CreateAcc = () => {
           </form>
           <p className="text-center mt-4 text-sm">
             Already got an account?{" "}
-            <a href="adminLog" className="text-indigo-600 hover:underline">
+            <a
+              href="/gas-station-owner/login"
+              className="text-indigo-600 hover:underline"
+            >
               Login Here
             </a>
           </p>

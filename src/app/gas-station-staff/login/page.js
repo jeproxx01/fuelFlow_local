@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/homepage/Navbar";
+import Footer from "@/components/homepage/Footer";
 
 const LoginAcc = () => {
   return (
@@ -12,19 +12,23 @@ const LoginAcc = () => {
       <div className="flex-grow flex items-center justify-center mt-32 md:mt-0">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-center text-2xl font-semibold mb-6">Login</h2>
-          <form action="verify.php" method="POST" className="space-y-4">
+          <form
+            action="/gas-station-staff/dashboard"
+            method="POST"
+            className="space-y-4"
+          >
             <input
               type="email"
               name="email"
               placeholder="Email Address"
-              required
+              /*required*/
               className="w-full p-3 border border-gray-300 rounded-lg"
             />
             <input
               type="password"
               name="password"
               placeholder="Password"
-              required
+              /*required*/
               className="w-full p-3 border border-gray-300 rounded-lg"
             />
 

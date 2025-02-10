@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer"; // Import Footer
+import Navbar from "@/components/homepage/Navbar";
+import Footer from "@/components/homepage/Footer"; // Import Footer
 
 const CreateAcc = () => {
   return (

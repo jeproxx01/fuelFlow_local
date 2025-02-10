@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/admin/Sidebar";
-import { Topbar } from "@/components/admin/Topbar";
+import { Sidebar } from "@/components/gas-station-staff/Sidebar";
+import { Topbar } from "@/components/gas-station-staff/Topbar";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -41,7 +41,7 @@ export default function Home() {
           {/* Grid structure for responsiveness */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">Total Customer</h2>
+              <h2 className="text-lg font-semibold mb-2">Total Order</h2>
               <p className="text-2xl font-bold">1500</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
@@ -49,7 +49,7 @@ export default function Home() {
               <p className="text-2xl font-bold">50</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">Total Admin</h2>
+              <h2 className="text-lg font-semibold mb-2">Total Product</h2>
               <p className="text-2xl font-bold">5</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
@@ -60,7 +60,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Top Sellers</h2>
+              <h2 className="text-lg font-semibold mb-4">Top Sale</h2>
               <img
                 src="https://openui.fly.dev/openui/300x200.svg?text=📊"
                 alt="Top Sellers Chart"
@@ -68,7 +68,7 @@ export default function Home() {
               />
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Top Sellers</h2>
+              <h2 className="text-lg font-semibold mb-4">Top Sale</h2>
               <img
                 src="https://openui.fly.dev/openui/300x200.svg?text=📈"
                 alt="Top Sellers Chart"

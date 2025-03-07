@@ -1,9 +1,10 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import Navbar from "@/components/homepage/Navbar";
 import Footer from "@/components/homepage/Footer";
 
-const LoginSection = () => {
+export default function Home() {
   const roles = [
     {
       title: "Admin",
@@ -13,47 +14,70 @@ const LoginSection = () => {
     {
       title: "Office Staff",
       desc: "Processes orders, manages customer accounts, and coordinates deliveries.",
-      href: "/office-staff/login",
+      href: "/admin/office-staff-account/login",
     },
     {
       title: "Depot Staff",
       desc: "Handles fuel inventory, dispatches deliveries, and ensures compliance.",
-      href: "/depot-staff/login",
+      href: "/admin/depot-staff-account/login",
     },
     {
       title: "Gas Station Owner",
       desc: "Places orders, tracks deliveries, and manages station inventory.",
-      href: "/gas-station-owner/login",
+      href: "/admin/station-owner/login",
     },
     {
       title: "Gas Station Staff",
-      desc: "Receives deliveries, updates inventory.",
-      href: "/gas-station-staff/login",
+      desc: "Receives deliveries, updates inventory, and manages station operations.",
+      href: "/admin/station-staff/login",
     },
   ];
 
+  // First three roles
+  const topRoles = roles.slice(0, 3);
+  // Last two roles
+  const bottomRoles = roles.slice(3);
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
       {/* Main Content */}
-      <main className="flex-grow max-w-6xl mx-auto px-4 py-20 md:py-32">
-        <div className="flex flex-wrap justify-center gap-6">
-          {roles.map((role, index) => (
+      <main className="flex-grow container mx-auto px-4 py-12 mt-16">
+        {/* Top Row - 3 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-8">
+          {topRoles.map((role, index) => (
             <div
               key={index}
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow w-80"
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 flex flex-col items-center text-center"
             >
-              <h2 className="text-lg font-semibold mb-3 flex justify-center">
-                {role.title}
-              </h2>
-              <p className="text-gray-600 mb-4">{role.desc}</p>
-              <a
+              <h2 className="text-xl font-semibold mb-3">{role.title}</h2>
+              <p className="text-gray-600 mb-6">{role.desc}</p>
+              <Link
                 href={role.href}
-                className="block bg-red-500 text-white px-4 py-2 rounded-lg text-center hover:bg-red-600"
+                className="w-full bg-[#f44336] text-white py-2 rounded-lg hover:bg-[#d32f2f] transition-colors no-underline hover:text-white"
               >
                 Login
-              </a>
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom Row - 2 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {bottomRoles.map((role, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 flex flex-col items-center text-center"
+            >
+              <h2 className="text-xl font-semibold mb-3">{role.title}</h2>
+              <p className="text-gray-600 mb-6">{role.desc}</p>
+              <Link
+                href={role.href}
+                className="w-full bg-[#f44336] text-white py-2 rounded-lg hover:bg-[#d32f2f] transition-colors no-underline hover:text-white"
+              >
+                Login
+              </Link>
             </div>
           ))}
         </div>
@@ -62,6 +86,4 @@ const LoginSection = () => {
       <Footer />
     </div>
   );
-};
-
-export default LoginSection;
+}

@@ -1,81 +1,107 @@
 "use client";
-import React, { useState } from "react";
-import { Menu, X } from "lucide-react";
-import Image from "next/image";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { Flame, Menu, X } from "lucide-react";
 
-const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
+export default function Navigation() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const menuItems = [
-    "Our Fuels",
-    "Services",
-    "News & Promos",
-    "About Us",
-    "Contact Us",
-  ];
+  useEffect(() => {
+    document.documentElement.style.scrollPaddingTop = "80px";
+    document.documentElement.style.scrollBehavior = "smooth";
+
+    return () => {
+      document.documentElement.style.scrollPaddingTop = "";
+      document.documentElement.style.scrollBehavior = "";
+    };
+  }, []);
+
+  const scrollToSection = (id) => (e) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+      setIsMenuOpen(false);
+    }
+  };
 
   return (
-    <nav className="fixed top-0 w-full bg-[#483285] text-white p-4 shadow-md z-50">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
-        {/* Logo and Title */}
-        <div className="flex items-center">
-          <div className="h-12 w-12 mr-3">
-            <Image
-              src="/logo.png"
-              alt="FuelFlow Logo"
-              width={48}
-              height={48}
-              className="w-full h-full"
-            />
+    <header className="fixed top-0 left-0 right-0 w-full z-50 bg-gray-900/90 backdrop-blur-sm text-white py-4">
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="relative h-10 w-10">
+            <div className="absolute inset-0 rotate-45 border-2 border-white"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Flame className="h-6 w-6 text-red-500" />
+            </div>
           </div>
-          <h1 className="text-xl font-semibold">
-            <Link href="/" className="text-white no-underline hover:text-white">
-              FuelFlow
-            </Link>
-          </h1>
-        </div>
+          <span className="text-xl text-white font-bold ml-5">FuelFlow</span>
+        </Link>
 
-        {/* Desktop Menu - Fully Centered */}
-        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 space-x-8">
-          {menuItems.map((item, index) => (
-            <Link
-              key={index}
-              href="#"
-              className="text-sm text-white no-underline hover:text-white transition-colors"
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          {[
+            "home",
+            "our-fuels",
+            "services",
+            "news-promos",
+            "about-us",
+            "contact-us",
+          ].map((id) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              onClick={scrollToSection(id)}
+              className="text-white hover:text-gray-300 transition-colors duration-200 cursor-pointer"
             >
-              {item}
-            </Link>
+              {id
+                .replace("-", " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </a>
           ))}
-        </div>
+        </nav>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-[#5a4399] transition-colors text-white"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors text-white"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </button>
-      </div>
 
-      {/* Mobile Menu - Centered */}
-      {menuOpen && (
-        <div className="md:hidden mt-4 pb-4 flex justify-center">
-          <div className="flex flex-col items-center space-y-4">
-            {menuItems.map((item, index) => (
-              <Link
-                key={index}
-                href="#"
-                className="text-sm text-white no-underline hover:text-white transition-colors"
-              >
-                {item}
-              </Link>
-            ))}
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-sm md:hidden">
+            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+              {[
+                "home",
+                "our-fuels",
+                "services",
+                "news-promos",
+                "about-us",
+                "contact-us",
+              ].map((id) => (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  onClick={scrollToSection(id)}
+                  className="text-white hover:text-gray-300 transition-colors duration-200 cursor-pointer"
+                >
+                  {id
+                    .replace("-", " ")
+                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+                </a>
+              ))}
+            </nav>
           </div>
-        </div>
-      )}
-    </nav>
+        )}
+      </div>
+    </header>
   );
-};
-
-export default Navbar;
+}

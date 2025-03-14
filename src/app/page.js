@@ -41,7 +41,7 @@ export default function Home() {
               </div>
               <div className="md:w-1/2">
                 <Image
-                  src="/placeholder.svg?height=400&width=500"
+                  src="/logo/logo.gif"
                   alt="Fuel Delivery Management Dashboard"
                   width={500}
                   height={400}
@@ -115,7 +115,7 @@ export default function Home() {
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/placeholder.svg?height=400&width=600"
+                    src="/fuels/premium.svg"
                     alt="Premium Fuel"
                     fill
                     className="object-cover"
@@ -203,7 +203,7 @@ export default function Home() {
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/placeholder.svg?height=400&width=600"
+                    src="/fuels/regular.svg"
                     alt="Regular Fuel"
                     fill
                     className="object-cover"
@@ -291,7 +291,7 @@ export default function Home() {
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/placeholder.svg?height=400&width=600"
+                    src="/fuels/diesel.svg"
                     alt="Diesel Fuel"
                     fill
                     className="object-cover"
@@ -481,18 +481,18 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <Image
-                  src="/placeholder.svg?height=200&width=400"
+                  src="/news/soon.png"
                   alt="News Article"
                   width={400}
                   height={200}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-fill"
                 />
                 <div className="p-6">
                   <div className="text-sm text-gray-500 mb-2">
                     March 10, 2025
                   </div>
                   <h3 className="text-xl font-bold mb-2">
-                    FuelFlow Launches New Mobile App
+                    Coming Soon: FuelFlow New Mobile App
                   </h3>
                   <p className="text-gray-600 mb-4">
                     Our new mobile app makes it easier than ever to manage your
@@ -522,11 +522,11 @@ export default function Home() {
 
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <Image
-                  src="/placeholder.svg?height=200&width=400"
+                  src="/news/promotion.png"
                   alt="Promotion"
                   width={400}
                   height={200}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-fill"
                 />
                 <div className="p-6">
                   <div className="text-sm text-gray-500 mb-2">
@@ -563,11 +563,11 @@ export default function Home() {
 
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <Image
-                  src="/placeholder.svg?height=200&width=400"
+                  src="/news/insights.png"
                   alt="Industry News"
                   width={400}
                   height={200}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-fill"
                 />
                 <div className="p-6">
                   <div className="text-sm text-gray-500 mb-2">
@@ -685,7 +685,7 @@ export default function Home() {
               <div className="relative">
                 <div className="absolute -top-4 -left-4 w-24 h-24 bg-indigo-900 rounded-lg"></div>
                 <Image
-                  src="/placeholder.svg?height=500&width=600"
+                  src="/logo/logo.svg"
                   alt="About FuelFlow"
                   width={600}
                   height={500}

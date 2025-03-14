@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Flame, Menu, X } from "lucide-react";
+import Image from "next/image";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,12 +32,15 @@ export default function Navigation() {
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="relative h-10 w-10">
-            <div className="absolute inset-0 rotate-45 border-2 border-white"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Flame className="h-6 w-6 text-red-500" />
-            </div>
+            <Image 
+              src="/logo/logo.svg" 
+              alt="FuelFlow Logo" 
+              width={40} 
+              height={40}
+              priority
+            />
           </div>
-          <span className="text-xl text-white font-bold ml-5">FuelFlow</span>
+          <span className="text-xl text-white font-bold">FuelFlow</span>
         </Link>
 
         {/* Desktop Navigation */}

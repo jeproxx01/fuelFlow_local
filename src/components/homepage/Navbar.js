@@ -78,7 +78,7 @@ export default function Navigation() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-sm md:hidden">
-            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4 md:space-y-0">
               {[
                 "home",
                 "our-fuels",

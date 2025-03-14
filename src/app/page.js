@@ -115,10 +115,10 @@ export default function Home() {
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/fuels/premium.svg"
+                    src="/fuels/premium.png"
                     alt="Premium Fuel"
                     fill
-                    className="object-cover"
+                    className="object-fill"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
@@ -178,35 +178,16 @@ export default function Home() {
                       Improved fuel efficiency
                     </li>
                   </ul>
-                  <Link
-                    href="#"
-                    className="text-red-500 font-semibold hover:text-red-600 inline-flex items-center"
-                  >
-                    Learn more
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </Link>
                 </div>
               </div>
 
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/fuels/regular.svg"
+                    src="/fuels/regular.png"
                     alt="Regular Fuel"
                     fill
-                    className="object-cover"
+                    className="object-fill"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
@@ -266,35 +247,16 @@ export default function Home() {
                       Suitable for most vehicles
                     </li>
                   </ul>
-                  <Link
-                    href="#"
-                    className="text-red-500 font-semibold hover:text-red-600 inline-flex items-center"
-                  >
-                    Learn more
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </Link>
                 </div>
               </div>
 
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
                 <div className="relative h-48 bg-indigo-900">
                   <Image
-                    src="/fuels/diesel.svg"
+                    src="/fuels/diesel.png"
                     alt="Diesel Fuel"
                     fill
-                    className="object-cover"
+                    className="object-fill"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
@@ -354,25 +316,6 @@ export default function Home() {
                       Lower emissions options available
                     </li>
                   </ul>
-                  <Link
-                    href="#"
-                    className="text-red-500 font-semibold hover:text-red-600 inline-flex items-center"
-                  >
-                    Learn more
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </Link>
                 </div>
               </div>
             </div>

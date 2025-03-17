@@ -42,9 +42,12 @@ export async function GET(req) {
       );
     }
 
-    // Get fresh user data from database
+    // Get fresh user data from database by joining users and admin tables
     const [rows] = await db.execute(
-      "SELECT id, username, email FROM admin WHERE id = ?",
+      `SELECT u.id, u.username, u.email, a.id as admin_id 
+       FROM users u 
+       INNER JOIN admin a ON u.id = a.user_id 
+       WHERE u.id = ? AND u.role = 'admin'`,
       [decoded.id]
     );
 
@@ -68,6 +71,7 @@ export async function GET(req) {
       {
         user: {
           id: admin.id,
+          admin_id: admin.admin_id,
           username: admin.username,
           email: admin.email,
         },

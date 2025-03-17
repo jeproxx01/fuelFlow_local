@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export const Sidebar = ({ isOpen, toggleSidebar }) => {
   const pathname = usePathname();
@@ -88,15 +89,20 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/admin/logout", {
+      const response = await fetch("/api/auth/logout", {
         method: "POST",
+        credentials: "include",
       });
 
-      if (response.ok) {
-        window.location.href = "/admin/login";
+      if (!response.ok) {
+        throw new Error("Logout failed");
       }
+
+      // Redirect to admin login page
+      window.location.href = "/admin";
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("Failed to logout");
     }
   };
 
@@ -114,7 +120,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
             }`}
           >
             <div className="w-8 h-8 flex items-center justify-center">
-              <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+              <img src="/logo/logo.svg" alt="Logo" className="h-8 w-8" />
             </div>
             <span className={`text-lg font-semibold ${!isOpen && "hidden"}`}>
               FuelFlow

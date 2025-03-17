@@ -1,83 +1,193 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/depot-staff/Sidebar";
-import { Topbar } from "@/components/depot-staff/Topbar";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar, Line } from "react-chartjs-2";
 
-export default function Home() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-  // Automatically collapse the sidebar on mobile
+const DashboardPage = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsSidebarOpen(false); // Automatically shrink sidebar on mobile
-      } else {
-        setIsSidebarOpen(true); // Expand sidebar on larger screens
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/depot-staff/me", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/depot-staff/login");
+            return;
+          }
+          throw new Error("Failed to fetch depot staff data");
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setError(error.message);
+        setIsLoading(false);
       }
     };
 
-    window.addEventListener("resize", handleResize);
-    handleResize();
+    checkAuth();
+  }, [router]);
 
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const stats = [
+    {
+      title: "Total Gas Station",
+      value: "1500",
+    },
+    {
+      title: "New Order",
+      value: "50",
+    },
+    {
+      title: "Total Admin",
+      value: "5",
+    },
+    {
+      title: "Confirmed Order",
+      value: "45",
+    },
+  ];
+
+  // Bar chart data
+  const barChartData = {
+    labels: ["Regular", "Premium", "Diesel"],
+    datasets: [
+      {
+        label: "Fuel Distribution",
+        data: [600, 400, 500],
+        backgroundColor: ["#10B981", "#EC4899", "#3B82F6"],
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  // Line chart data
+  const lineChartData = {
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    datasets: [
+      {
+        label: "Sales Trend",
+        data: [300, 450, 400, 550, 500, 600],
+        borderColor: "#3B82F6",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          display: true,
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Sidebar
-        isOpen={isSidebarOpen}
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-      <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "ml-64" : "ml-20"
-        }`}
-      >
-        <Topbar
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          isSidebarOpen={isSidebarOpen}
-        />
-        <div className="p-6 mt-16">
-          {/* Grid structure for responsiveness */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">Total Gas Station</h2>
-              <p className="text-2xl font-bold">1500</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">New Order</h2>
-              <p className="text-2xl font-bold">50</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">Total Admin</h2>
-              <p className="text-2xl font-bold">5</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-lg font-semibold mb-2">Confirmed Order</h2>
-              <p className="text-2xl font-bold">45</p>
-            </div>
+    <div className="w-full p-4 md:p-6 overflow-x-hidden">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+        {stats.map((stat, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg shadow-md p-4 md:p-6 hover:shadow-lg transition-shadow"
+          >
+            <h3 className="text-gray-600 text-sm font-medium mb-2">
+              {stat.title}
+            </h3>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">
+              {stat.value}
+            </p>
           </div>
+        ))}
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Top Sellers</h2>
-              <img
-                src="https://openui.fly.dev/openui/300x200.svg?text=📊"
-                alt="Top Sellers Chart"
-                className="w-full h-auto"
-              />
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Top Sellers</h2>
-              <img
-                src="https://openui.fly.dev/openui/300x200.svg?text=📈"
-                alt="Top Sellers Chart"
-                className="w-full h-auto"
-              />
-            </div>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Fuel Distribution Chart */}
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Fuel Distribution
+          </h3>
+          <div className="h-48 md:h-64">
+            <Bar data={barChartData} options={chartOptions} />
+          </div>
+        </div>
+
+        {/* Sales Trend Chart */}
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Sales Trend
+          </h3>
+          <div className="h-48 md:h-64">
+            <Line data={lineChartData} options={chartOptions} />
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardPage;

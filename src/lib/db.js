@@ -6,13 +6,29 @@ const pool = mysql.createPool({
   password: process.env.MYSQL_PASSWORD || "",
   database: process.env.MYSQL_DATABASE || "fuelflow",
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  namedPlaceholders: true,
 });
 
-// Test the connection
-pool
-  .getConnection()
+// Helper function to get a connection with retry logic
+const getConnectionWithRetry = async (retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await pool.getConnection();
+      return connection;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      console.log(`Failed to get connection, retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+};
+
+// Test the connection with retry logic
+getConnectionWithRetry()
   .then((connection) => {
     console.log("Database connected successfully");
     connection.release();
@@ -23,8 +39,10 @@ pool
 
 export const db = {
   execute: async (sql, params) => {
+    let connection;
     try {
-      const [rows] = await pool.execute(sql, params);
+      connection = await getConnectionWithRetry();
+      const [rows] = await connection.execute(sql, params);
       return [rows];
     } catch (error) {
       console.error("Database query error:", {
@@ -34,11 +52,15 @@ export const db = {
         stack: error.stack,
       });
       throw error;
+    } finally {
+      if (connection) connection.release();
     }
   },
   query: async (sql, params) => {
+    let connection;
     try {
-      const [rows] = await pool.execute(sql, params);
+      connection = await getConnectionWithRetry();
+      const [rows] = await connection.execute(sql, params);
       return [rows];
     } catch (error) {
       console.error("Database query error:", {
@@ -48,6 +70,23 @@ export const db = {
         stack: error.stack,
       });
       throw error;
+    } finally {
+      if (connection) connection.release();
+    }
+  },
+  transaction: async (callback) => {
+    let connection;
+    try {
+      connection = await getConnectionWithRetry();
+      await connection.beginTransaction();
+      const result = await callback(connection);
+      await connection.commit();
+      return result;
+    } catch (error) {
+      if (connection) await connection.rollback();
+      throw error;
+    } finally {
+      if (connection) connection.release();
     }
   },
 };

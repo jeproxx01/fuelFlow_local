@@ -83,7 +83,7 @@ const CreateAcc = () => {
 
     try {
       // Send data to server
-      const response = await fetch("/api/admin/register", {
+      const response = await fetch("/api/admin/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

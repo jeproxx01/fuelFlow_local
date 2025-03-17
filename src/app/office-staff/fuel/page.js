@@ -1,11 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Sidebar } from "@/components/office-staff/Sidebar";
-import { Topbar } from "@/components/office-staff/Topbar";
 
 export default function ManageFuel() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [imageSrc, setImageSrc] = useState("/price.jpg"); // Editable image source
+  const [imageSrc, setImageSrc] = useState("/price.jpg");
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -17,62 +14,28 @@ export default function ManageFuel() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Sidebar
-        isOpen={isSidebarOpen}
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-      <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "ml-64" : "ml-20"
-        }`}
-      >
-        <Topbar
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          isSidebarOpen={isSidebarOpen}
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Manage Fuel Prices</h1>
+
+      {/* Current Price Image */}
+      <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+        <h2 className="text-lg font-semibold mb-2">Current Price List</h2>
+        <img
+          src={imageSrc}
+          alt="Fuel Price List"
+          className="max-w-full h-auto rounded-lg"
         />
-        <div className="p-6 mt-16">
-          <h1 className="text-2xl font-bold mb-4">Manage Fuel Products</h1>
+      </div>
 
-          {/* Editable Image Section */}
-          <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-            <img
-              src={imageSrc}
-              alt="Fuel Price Adjustment"
-              className="w-50 h-80 object-cover mx-auto rounded-lg"
-            />
-            <div className="text-center mt-4">
-              <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Change Image
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* Fuel Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { name: "Diesel", price: "₱65.85/liter" },
-              { name: "Unleaded", price: "₱72.50/liter" },
-              { name: "Premium", price: "₱78.95/liter" },
-            ].map((fuel, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-lg shadow-md text-center"
-              >
-                <h2 className="text-lg font-semibold mb-2">{fuel.name}</h2>
-                <p className="text-xl font-bold">{fuel.price}</p>
-                <button className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                  Edit this Product
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Upload New Price List */}
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-2">Update Price List</h2>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+        />
       </div>
     </div>
   );

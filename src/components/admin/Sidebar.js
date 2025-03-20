@@ -72,6 +72,11 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/admin/order",
     },
     {
+      title: "Fuel",
+      icon: <Fuel size={20} />,
+      path: "/admin/fuel",
+    },
+    {
       title: "Inventory",
       icon: <Fuel size={20} />,
       path: "/admin/inventory",

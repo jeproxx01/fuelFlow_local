@@ -1,91 +1,175 @@
 "use client";
 import { useState } from "react";
 
-export default function ManageOrders() {
+export default function AdminOrders() {
   const [orders, setOrders] = useState([
     {
       id: 1,
-      customer: "Louie",
+      orderNumber: "ORD-2024-001",
+      customer: "ABC Company",
       product: "Diesel",
-      quantity: "100L",
-      status: "Pending",
+      quantity: "5000L",
+      status: "Completed",
+      depot: "Main Depot",
+      deliveryDate: "2024-03-17",
+      assignedTo: "John Doe",
     },
     {
       id: 2,
-      customer: "Jeff",
+      orderNumber: "ORD-2024-002",
+      customer: "XYZ Industries",
       product: "Unleaded",
-      quantity: "50L",
-      status: "Completed",
+      quantity: "3000L",
+      status: "Processing",
+      depot: "North Depot",
+      deliveryDate: "2024-03-18",
+      assignedTo: "Jane Smith",
     },
     {
       id: 3,
-      customer: "AR",
+      orderNumber: "ORD-2024-003",
+      customer: "123 Services",
       product: "Premium",
-      quantity: "75L",
-      status: "Processing",
+      quantity: "2000L",
+      status: "Pending",
+      depot: "South Depot",
+      deliveryDate: "2024-03-19",
+      assignedTo: "Unassigned",
     },
   ]);
 
-  const handleStatusChange = (id, newStatus) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
-  };
-
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Manage Orders</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Order Management</h1>
+        <div className="flex gap-2">
+          <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+            New Order
+          </button>
+          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+            Export Data
+          </button>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">
+            Bulk Actions
+          </button>
+        </div>
+      </div>
+
+      {/* Orders Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
+          <h3 className="text-sm font-medium text-gray-500">Total Orders</h3>
+          <p className="text-2xl font-bold text-gray-900">3</p>
+          <p className="text-sm text-gray-500">All time</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
+          <h3 className="text-sm font-medium text-gray-500">Completed</h3>
+          <p className="text-2xl font-bold text-green-600">1</p>
+          <p className="text-sm text-gray-500">Successfully delivered</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-500">
+          <h3 className="text-sm font-medium text-gray-500">Processing</h3>
+          <p className="text-2xl font-bold text-yellow-600">1</p>
+          <p className="text-sm text-gray-500">In progress</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500">
+          <h3 className="text-sm font-medium text-gray-500">Pending</h3>
+          <p className="text-2xl font-bold text-red-600">1</p>
+          <p className="text-sm text-gray-500">Awaiting action</p>
+        </div>
+      </div>
 
       {/* Orders List */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">Customer</th>
-              <th className="border p-2">Product</th>
-              <th className="border p-2">Quantity</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border">
-                <td className="border p-2">{order.customer}</td>
-                <td className="border p-2">{order.product}</td>
-                <td className="border p-2">{order.quantity}</td>
-                <td className="border p-2">
-                  <span
-                    className={`px-2 py-1 rounded ${
-                      order.status === "Completed"
-                        ? "bg-green-100 text-green-800"
-                        : order.status === "Processing"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-                <td className="border p-2">
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleStatusChange(order.id, e.target.value)
-                    }
-                    className="border rounded p-1"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                </td>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Order Number
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Product
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quantity
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Depot
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Delivery Date
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Assigned To
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.orderNumber}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.customer}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.product}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.quantity}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.depot}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.deliveryDate}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.assignedTo}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`inline-flex px-3 py-1 text-sm rounded-full font-medium ${
+                        order.status === "Completed"
+                          ? "bg-green-100 text-green-800"
+                          : order.status === "Processing"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button className="text-blue-600 hover:text-blue-800 mr-3">
+                      Edit
+                    </button>
+                    <button className="text-gray-600 hover:text-gray-800 mr-3">
+                      View
+                    </button>
+                    <button className="text-red-600 hover:text-red-800">
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

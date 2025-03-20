@@ -159,7 +159,7 @@ const LoginPage = () => {
             </div>
 
             <div className="flex justify-end">
-              <a href="#" className="text-sm text-red-600 hover:text-red-800">
+              <a href="#" className="text-sm text-red-600 hover:text-red-600">
                 Forgot Password?
               </a>
             </div>

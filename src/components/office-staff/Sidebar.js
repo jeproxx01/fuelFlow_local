@@ -30,6 +30,11 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/office-staff/order",
     },
     {
+      title: "Fuel",
+      icon: <Fuel size={20} />,
+      path: "/office-staff/fuel",
+    },
+    {
       title: "Inventory",
       icon: <Fuel size={20} />,
       path: "/office-staff/inventory",

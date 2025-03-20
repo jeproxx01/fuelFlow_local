@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 });
 
 // Helper function to get a connection with retry logic
-const getConnectionWithRetry = async (retries = 3, delay = 1000) => {
+const getConnectionWithRetry = async (retries = 3, delay = 500) => {
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await pool.getConnection();

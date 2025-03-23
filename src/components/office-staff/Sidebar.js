@@ -66,8 +66,8 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
         throw new Error("Logout failed");
       }
 
-      // Redirect to admin login page
-      window.location.href = "/admin";
+      // Redirect to login page
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Failed to logout");

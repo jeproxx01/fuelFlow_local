@@ -26,7 +26,7 @@ export default function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
-                    href="#"
+                    href="/login"
                     className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-md text-center transition-colors"
                   >
                     Get Started
@@ -923,7 +923,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="#"
+                href="/login"
                 className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-md text-center transition-colors"
               >
                 Get Started Today

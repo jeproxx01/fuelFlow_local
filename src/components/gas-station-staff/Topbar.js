@@ -1,8 +1,29 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export function Topbar({ toggleSidebar, isSidebarOpen }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout");
+    }
+  };
 
   return (
     <div
@@ -45,9 +66,12 @@ export function Topbar({ toggleSidebar, isSidebarOpen }) {
               </a>
             </li>
             <li>
-              <a href="/" className="block px-4 py-2 hover:bg-gray-100">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+              >
                 Log Out
-              </a>
+              </button>
             </li>
           </ul>
         )}

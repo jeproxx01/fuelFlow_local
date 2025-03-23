@@ -1,53 +1,81 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
 export async function middleware(request) {
   const token = request.cookies.get("token");
   const { pathname } = request.nextUrl;
 
   // Public paths that don't require authentication
-  const publicPaths = ["/admin"];
+  const publicPaths = ["/", "/login", "/api/login"];
 
-  // Protected paths that require authentication
-  const protectedPaths = [
-    "/admin/dashboard",
-    "/admin/office-staff-account",
-    "/admin/depot-staff-account",
-    "/admin/truck",
-    "/admin/order",
-    "/admin/inventory",
-    "/admin/report",
-    "/office-staff/dashboard",
-    "/office-staff/order",
-    "/office-staff/inventory",
-    "/office-staff/truck",
-    "/office-staff/report",
-    "/depot-staff/dashboard",
-    "/depot-staff/order",
-    "/depot-staff/inventory",
-    "/depot-staff/truck",
-    "/depot-staff/report",
-  ];
+  // Role-based path mappings
+  const rolePaths = {
+    admin: ["/admin"],
+    gas_station_owner: ["/gas-station-owner"],
+    gas_station_staff: ["/gas-station-staff"],
+    depot_staff: ["/depot-staff"],
+    office_staff: ["/office-staff"],
+  };
 
-  // If trying to access /admin/login, redirect to /admin
-  if (pathname === "/admin/login") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  // If trying to access login page while already authenticated, redirect to appropriate dashboard
+  if (pathname === "/login" && token) {
+    try {
+      const decoded = jwt.verify(
+        token.value,
+        process.env.JWT_SECRET || "your-secret-key"
+      );
+      const role = decoded.role;
+      const dashboardPath = rolePaths[role]?.[0] + "/dashboard";
+      return NextResponse.redirect(new URL(dashboardPath, request.url));
+    } catch (error) {
+      // If token is invalid, continue to login page
+    }
   }
 
-  // Check if the path is protected and there's no token
-  if (protectedPaths.some((path) => pathname.startsWith(path)) && !token) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  // Allow access to public paths
+  if (publicPaths.some((path) => pathname.startsWith(path))) {
+    return NextResponse.next();
   }
 
-  // If user is authenticated and tries to access login page, redirect to dashboard
-  if (publicPaths.includes(pathname) && token) {
-    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+  // Check if path requires authentication
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next();
+  try {
+    const decoded = jwt.verify(
+      token.value,
+      process.env.JWT_SECRET || "your-secret-key"
+    );
+    const userRole = decoded.role;
+
+    // Check if user has access to the requested path
+    const allowedPaths = rolePaths[userRole] || [];
+    const hasAccess = allowedPaths.some((path) => pathname.startsWith(path));
+
+    if (!hasAccess) {
+      // Redirect to appropriate dashboard if user doesn't have access
+      const dashboardPath = rolePaths[userRole]?.[0] + "/dashboard";
+      return NextResponse.redirect(new URL(dashboardPath, request.url));
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    // If token is invalid, redirect to login
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 }
 
 // Configure which paths the middleware should run on
 export const config = {
-  matcher: ["/admin/:path*", "/office-staff/:path*", "/depot-staff/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/gas-station-owner/:path*",
+    "/gas-station-staff/:path*",
+    "/depot-staff/:path*",
+    "/office-staff/:path*",
+    "/login",
+    "/api/login",
+  ],
 };

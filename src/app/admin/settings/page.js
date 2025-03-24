@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
+import { X } from "lucide-react";
 
 export default function AdminSettings() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -54,6 +56,10 @@ export default function AdminSettings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmUpdate = async () => {
     setIsLoading(true);
 
     // Validate passwords if trying to change them
@@ -90,7 +96,20 @@ export default function AdminSettings() {
         throw new Error(data.message || "Failed to update profile");
       }
 
-      toast.success("Profile updated successfully");
+      // Show success message
+      toast.success("Update Successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: "#10B981",
+          color: "white",
+          padding: "16px",
+          borderRadius: "8px",
+          fontSize: "16px",
+          fontWeight: "500",
+        },
+      });
+
       setFormData((prev) => ({
         ...prev,
         currentPassword: "",
@@ -102,11 +121,13 @@ export default function AdminSettings() {
       toast.error(error.message || "Failed to update profile");
     } finally {
       setIsLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
   return (
     <div className="p-6">
+      <Toaster />
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
 
@@ -214,15 +235,50 @@ export default function AdminSettings() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                isLoading ? "opacity-75 cursor-not-allowed" : ""
-              }`}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg p-6 w-96 shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirm Update
+              </h3>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to update your profile information?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-700 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmUpdate}
+                disabled={isLoading}
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

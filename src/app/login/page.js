@@ -5,6 +5,7 @@ import { toast, Toaster } from "react-hot-toast";
 import { Eye } from "lucide-react";
 import Image from "next/image";
 import Footer from "@/components/homepage/Footer";
+import Link from "next/link";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -163,15 +164,28 @@ const LoginPage = () => {
               </a>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors ${
-                isLoading ? "opacity-75 cursor-not-allowed" : ""
-              }`}
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Logging in..." : "Login"}
+              </button>
+            </div>
+
+            {/* Create Account Link */}
+            <div className="text-center mt-4">
+              <p className="text-gray-600">
+                Don't have an account?{" "}
+                <Link
+                  href="/gas-station-owner/create-account"
+                  className="text-indigo-600 hover:text-indigo-500 font-medium"
+                >
+                  Create account
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
       </div>

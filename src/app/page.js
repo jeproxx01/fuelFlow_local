@@ -13,52 +13,47 @@ export default function Home() {
 
       <main className="flex-grow pt-14">
         {/* Hero Section */}
-        <section className="bg-indigo-900 text-white py-32 md:py-48" id="home">
-          <div className="container mx-auto px-4 flex items-center justify-center min-h-[60vh]">
-            <div className="flex flex-col md:flex-row items-center max-w-7xl mx-auto">
-              <div className="md:w-1/2 mb-10 md:mb-0 md:pr-12">
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight">
+        <section className="bg-indigo-900 text-white py-16 md:py-24" id="home">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="md:w-1/2 mb-10 md:mb-0">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
                   Fuelflow: Fuel Delivery Management System
                 </h1>
-                <p className="text-xl md:text-2xl mb-10 text-white/90 leading-relaxed">
+                <p className="text-xl mb-8 text-white">
                   The complete management system for fuel distributors, gas
                   stations, and fleet operators.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
                     href="/login"
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-8 rounded-md text-center transition-colors text-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-md text-center transition-colors"
                   >
                     Get Started
                   </Link>
                   <Link
                     href="#"
-                    className="bg-transparent hover:bg-white/10 border-2 border-white text-white font-bold py-4 px-8 rounded-md text-center transition-colors text-lg"
+                    className="bg-transparent hover:bg-white/10 border border-white text-white font-bold py-3 px-6 rounded-md text-center transition-colors"
                   >
                     Book a Demo
                   </Link>
                 </div>
               </div>
-              <div className="md:w-1/2 flex justify-center items-center">
-                <div className="relative w-full max-w-lg">
-                  <div className="absolute -top-4 -left-4 w-72 h-72 bg-red-500/10 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-                  <div className="absolute -bottom-8 right-4 w-72 h-72 bg-indigo-500/10 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-                  <Image
-                    src="/logo/logo.gif"
-                    alt="Fuel Delivery Management Dashboard"
-                    width={600}
-                    height={480}
-                    className="relative rounded-lg shadow-2xl border-4 border-white/10"
-                    priority
-                  />
-                </div>
+              <div className="md:w-1/2">
+                <Image
+                  src="/logo/logo.gif"
+                  alt="Fuel Delivery Management Dashboard"
+                  width={500}
+                  height={400}
+                  className="rounded-lg shadow-xl"
+                />
               </div>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-16 bg-white -mt-16 relative z-10 rounded-t-[3rem] shadow-xl">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">

@@ -1,89 +1,125 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+
+// Initialize Supabase admin client for email uniqueness check
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function PUT(req) {
   try {
-    const { username, email, currentPassword, newPassword } = await req.json();
-    const cookieStore = cookies();
-    const token = cookieStore.get("token");
+    const { username, email, newPassword } = await req.json();
 
-    if (!token) {
+    // Initialize user's Supabase client
+    const supabase = createRouteHandlerClient({ cookies });
+
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
       return NextResponse.json(
         { message: "Authentication required" },
         { status: 401 }
       );
     }
 
-    // Verify token and get user ID
-    const decoded = jwt.verify(
-      token.value,
-      process.env.JWT_SECRET || "your-secret-key"
-    );
+    // Verify admin role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    // Get current user data
-    const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [
-      decoded.id,
-    ]);
-
-    if (users.length === 0) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    const user = users[0];
-
-    // If trying to change password, verify current password
-    if (newPassword) {
-      const isPasswordValid = await bcrypt.compare(
-        currentPassword,
-        user.password
+    if (profileError || profile.role !== "Greystar Manager (Admin)") {
+      return NextResponse.json(
+        { message: "Unauthorized access" },
+        { status: 403 }
       );
-
-      if (!isPasswordValid) {
-        return NextResponse.json(
-          { message: "Current password is incorrect" },
-          { status: 401 }
-        );
-      }
     }
 
-    // Update user data
-    const updates = [];
-    const values = [];
+    // Prepare updates
+    const profileUpdates = {};
+    const authUpdates = {};
 
-    if (username && username !== user.username) {
-      updates.push("username = ?");
-      values.push(username);
+    if (username) {
+      profileUpdates.full_name = username;
     }
 
     if (email && email !== user.email) {
-      updates.push("email = ?");
-      values.push(email);
+      // Check if email is already taken
+      const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers({
+        email,
+      });
+
+      if (existingUser && existingUser.length > 0) {
+        return NextResponse.json(
+          { message: "Email already registered" },
+          { status: 409 }
+        );
+      }
+      authUpdates.email = email;
     }
 
     if (newPassword) {
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      updates.push("password = ?");
-      values.push(hashedPassword);
+      authUpdates.password = newPassword;
     }
 
-    if (updates.length > 0) {
-      values.push(decoded.id);
-      const query = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-      await db.execute(query, values);
+    // Update profile if needed
+    if (Object.keys(profileUpdates).length > 0) {
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update(profileUpdates)
+        .eq("id", user.id);
+
+      if (updateError) {
+        console.error("Profile update error:", updateError);
+        throw updateError;
+      }
+    }
+
+    // Update auth user if needed
+    if (Object.keys(authUpdates).length > 0) {
+      const { error: authUpdateError } = await supabase.auth.updateUser(
+        authUpdates
+      );
+
+      if (authUpdateError) {
+        console.error("Auth update error:", authUpdateError);
+        throw authUpdateError;
+      }
     }
 
     // Get updated user data
-    const [updatedUsers] = await db.execute(
-      "SELECT id, username, email, role FROM users WHERE id = ?",
-      [decoded.id]
-    );
+    const { data: updatedProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    const {
+      data: { user: updatedAuthUser },
+    } = await supabase.auth.getUser();
 
     return NextResponse.json({
       message: "Profile updated successfully",
-      user: updatedUsers[0],
+      user: {
+        id: user.id,
+        username: updatedProfile.full_name,
+        email: updatedAuthUser.email,
+        role: updatedProfile.role,
+      },
     });
   } catch (error) {
     console.error("Profile update error:", error);

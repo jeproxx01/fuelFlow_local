@@ -1,54 +1,60 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { db } from "@/lib/db";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 export async function GET(req) {
   try {
-    // Get the token from cookies
-    const token = req.cookies.get("token")?.value;
+    // Initialize Supabase client with auth helpers
+    const supabase = createRouteHandlerClient({ cookies });
 
-    if (!token) {
+    // Get the current session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
       return NextResponse.json(
         { message: "Not authenticated" },
         { status: 401 }
       );
     }
 
-    // Verify the token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your-secret-key"
-    );
+    const userId = session.user.id;
 
-    if (decoded.role !== "depot_staff") {
-      return NextResponse.json({ message: "Not authorized" }, { status: 403 });
+    // Get user profile and verify depot staff role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      return NextResponse.json(
+        { message: "Error fetching user profile" },
+        { status: 500 }
+      );
     }
 
-    // Get user data from database
-    const [users] = await db.execute(
-      `SELECT u.id, u.username, u.email, ds.department as depot_location, ds.full_name, ds.age, ds.sex, ds.contact_no 
-       FROM users u 
-       INNER JOIN depot_staff ds ON u.id = ds.user_id 
-       WHERE u.id = ? AND u.role = 'depot_staff'`,
-      [decoded.id]
-    );
-
-    const user = users[0];
-
-    if (!user) {
+    if (!profile) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    if (profile.role !== "Depot Staff") {
+      return NextResponse.json({ message: "Not authorized" }, { status: 403 });
     }
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        depot_location: user.depot_location,
-        full_name: user.full_name,
-        age: user.age,
-        sex: user.sex,
-        contact_no: user.contact_no,
+        id: userId,
+        username: profile.full_name,
+        email: session.user.email,
+        depot_location: profile.department,
+        full_name: profile.full_name,
+        age: profile.age,
+        sex: profile.sex,
+        contact_no: profile.contact_no,
       },
     });
   } catch (error) {

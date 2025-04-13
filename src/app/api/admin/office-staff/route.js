@@ -1,39 +1,67 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function GET() {
   try {
-    // First check if the table exists
-    const [tables] = await db.execute("SHOW TABLES LIKE 'office_staff'");
+    // Query profiles table for office staff
+    const { data: profiles, error: profilesError } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("role", "Office Staff")
+      .order("id", { ascending: false });
 
-    if (tables.length === 0) {
-      console.error("office_staff table does not exist");
-      return NextResponse.json(
-        { message: "Database not properly set up" },
-        { status: 500 }
-      );
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
+      throw profilesError;
     }
 
-    const [rows] = await db.execute(
-      `SELECT 
-        u.id,
-        u.username,
-        u.email,
-        os.full_name,
-        os.age,
-        os.sex,
-        os.contact_no,
-        os.department
-       FROM users u
-       INNER JOIN office_staff os ON u.id = os.user_id
-       WHERE u.role = 'office_staff'
-       ORDER BY os.id DESC`
+    // Fetch emails for all staff members
+    const staffWithEmails = await Promise.all(
+      profiles.map(async (profile) => {
+        const { data: authUser, error: authError } =
+          await supabaseAdmin.auth.admin.getUserById(profile.id);
+
+        if (authError) {
+          console.error(
+            `Error fetching auth data for user ${profile.id}:`,
+            authError
+          );
+          return {
+            ...profile,
+            email: null,
+            username: profile.full_name,
+          };
+        }
+
+        return {
+          id: profile.id,
+          username: profile.full_name,
+          email: authUser.user.email,
+          full_name: profile.full_name,
+          age: profile.age,
+          sex: profile.sex,
+          contact_no: profile.contact_no,
+          department: profile.department,
+        };
+      })
     );
 
     return NextResponse.json(
       {
-        staff: rows,
-        count: rows.length,
+        staff: staffWithEmails,
+        count: staffWithEmails.length,
       },
       { status: 200 }
     );

@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function POST(req) {
   try {
@@ -15,56 +26,78 @@ export async function POST(req) {
       );
     }
 
-    // Check if username or email already exists
-    const [existingUsers] = await db.execute(
-      "SELECT * FROM users WHERE username = ? OR email = ?",
-      [username, email]
-    );
+    try {
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            username,
+            department,
+          },
+        });
 
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-      if (existingUser.username === username) {
-        return NextResponse.json(
-          { message: "Username already taken" },
-          { status: 409 }
-        );
+      if (authError) {
+        console.error("Auth creation error:", authError);
+        if (authError.message.includes("already registered")) {
+          return NextResponse.json(
+            { message: "Email already registered" },
+            { status: 409 }
+          );
+        }
+        throw authError;
       }
-      if (existingUser.email === email) {
-        return NextResponse.json(
-          { message: "Email already registered" },
-          { status: 409 }
-        );
+
+      const userId = authData.user.id;
+
+      // Create profile in public.profiles table
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .insert({
+          id: userId,
+          full_name: username,
+          role: "Office Staff",
+          is_active: true,
+          department: department,
+        });
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        // Rollback: Delete the auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        throw profileError;
       }
+
+      return NextResponse.json(
+        {
+          message: "Office staff account created successfully",
+          user: {
+            id: userId,
+            username,
+            email,
+            role: "Office Staff",
+            department,
+          },
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error("Error during office staff creation:", {
+        message: error.message,
+        stack: error.stack,
+      });
+
+      return NextResponse.json(
+        { message: error.message || "Error creating account" },
+        { status: 500 }
+      );
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Use transaction helper
-    await db.transaction(async (connection) => {
-      // Create user first
-      const [userResult] = await connection.execute(
-        "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-        [username, email, hashedPassword, "office_staff"]
-      );
-
-      const userId = userResult.insertId;
-
-      // Create office staff entry
-      await connection.execute(
-        "INSERT INTO office_staff (user_id, department) VALUES (?, ?)",
-        [userId, department]
-      );
-    });
-
-    return NextResponse.json(
-      { message: "Office staff account created successfully" },
-      { status: 201 }
-    );
   } catch (error) {
-    console.error("Error creating office staff account:", error);
+    console.error("Unexpected error:", error);
     return NextResponse.json(
-      { message: error.message || "Error creating account" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

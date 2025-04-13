@@ -1,46 +1,84 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import jwt from "jsonwebtoken";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
+// Initialize Supabase admin client for querying all users
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
+
+// Known user roles in the system
+const USER_ROLES = ["Greystar Manager (Admin)", "Depot Staff", "Office Staff"];
 
 export async function GET(req) {
   try {
-    // Get token from cookies
-    const token = cookies().get("token")?.value;
+    // Initialize user's Supabase client
+    const supabase = createRouteHandlerClient({ cookies });
 
-    if (!token) {
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
       return NextResponse.json(
         { message: "Authentication required" },
         { status: 401 }
       );
     }
 
-    // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your-secret-key"
-    );
+    // Verify admin role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    if (decoded.role !== "admin") {
+    if (profileError || profile.role !== "Greystar Manager (Admin)") {
       return NextResponse.json(
         { message: "Admin access required" },
         { status: 403 }
       );
     }
 
-    // Get user statistics
-    const [userStats] = await db.execute(
-      `SELECT role, COUNT(*) as count 
-       FROM users 
-       GROUP BY role`
+    // Get total users count
+    const { count: totalUsers, error: countError } = await supabaseAdmin
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
+
+    if (countError) {
+      throw countError;
+    }
+
+    // Get counts for each role
+    const roleDistribution = await Promise.all(
+      USER_ROLES.map(async (role) => {
+        const { count, error: roleError } = await supabaseAdmin
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("role", role);
+
+        if (roleError) {
+          console.error(`Error fetching count for role ${role}:`, roleError);
+          return { role, count: 0 };
+        }
+
+        return { role, count: count || 0 };
+      })
     );
 
-    // Calculate total users
-    const totalUsers = userStats.reduce((sum, stat) => sum + stat.count, 0);
-
     return NextResponse.json({
-      totalUsers,
-      roleDistribution: userStats,
+      totalUsers: totalUsers || 0,
+      roleDistribution,
     });
   } catch (error) {
     console.error("Error fetching user stats:", error);

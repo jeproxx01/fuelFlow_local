@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+
+// Initialize Supabase admin client for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function PUT(req) {
   try {
@@ -12,7 +25,6 @@ export async function PUT(req) {
       age,
       sex,
       contactNo,
-      currentPassword,
       newPassword,
     } = await req.json();
 
@@ -24,107 +36,150 @@ export async function PUT(req) {
       );
     }
 
-    // Start a transaction
-    await db.transaction(async (connection) => {
-      // If password change is requested, verify current password first
-      if (currentPassword && newPassword) {
-        const [users] = await connection.execute(
-          "SELECT password FROM users WHERE id = ?",
-          [userId]
+    // Initialize user's Supabase client
+    const supabase = createRouteHandlerClient({ cookies });
+
+    // Get current user
+    const {
+      data: { user: requester },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !requester) {
+      return NextResponse.json(
+        { message: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Verify requester's role
+    const { data: requesterProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", requester.id)
+      .single();
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Check if requester is admin/office staff or the user themselves
+    const isSelf = requester.id === userId;
+    const isAdmin = requesterProfile.role === "Greystar Manager (Admin)";
+    const isOfficeStaff = requesterProfile.role === "Office Staff";
+
+    if (!isSelf && !isAdmin && !isOfficeStaff) {
+      return NextResponse.json(
+        { message: "Unauthorized to update this profile" },
+        { status: 403 }
+      );
+    }
+
+    // Verify target user exists and is depot staff
+    const { data: targetProfile, error: targetError } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (targetError || !targetProfile) {
+      return NextResponse.json(
+        { message: "Depot staff not found" },
+        { status: 404 }
+      );
+    }
+
+    if (targetProfile.role !== "Depot Staff") {
+      return NextResponse.json(
+        { message: "Target user is not a depot staff member" },
+        { status: 400 }
+      );
+    }
+
+    // Prepare updates
+    const profileUpdates = {};
+    const authUpdates = {};
+
+    if (fullName || username) {
+      profileUpdates.full_name = fullName || username;
+    }
+
+    if (age) {
+      profileUpdates.age = age;
+    }
+
+    if (sex) {
+      profileUpdates.sex = sex;
+    }
+
+    if (contactNo) {
+      profileUpdates.contact_no = contactNo;
+    }
+
+    if (email && email !== requester.email) {
+      // Check if email is already taken
+      const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers({
+        email,
+      });
+
+      if (existingUser && existingUser.length > 0) {
+        return NextResponse.json(
+          { message: "Email already registered" },
+          { status: 409 }
         );
-
-        if (users.length === 0) {
-          throw new Error("User not found");
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          currentPassword,
-          users[0].password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Current password is incorrect");
-        }
-
-        // Hash and update new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await connection.execute("UPDATE users SET password = ? WHERE id = ?", [
-          hashedPassword,
-          userId,
-        ]);
       }
+      authUpdates.email = email;
+    }
 
-      // Update user details if provided
-      if (username || email) {
-        // Check for existing username/email
-        const [existingUsers] = await connection.execute(
-          "SELECT id, username, email FROM users WHERE (username = ? OR email = ?) AND id != ?",
-          [username || "", email || "", userId]
-        );
+    if (newPassword) {
+      authUpdates.password = newPassword;
+    }
 
-        if (existingUsers.length > 0) {
-          const existing = existingUsers[0];
-          if (username && existing.username === username) {
-            throw new Error("Username already taken");
-          }
-          if (email && existing.email === email) {
-            throw new Error("Email already registered");
-          }
-        }
+    // Update profile if needed
+    if (Object.keys(profileUpdates).length > 0) {
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update(profileUpdates)
+        .eq("id", userId);
 
-        const updates = [];
-        const values = [];
-        if (username) {
-          updates.push("username = ?");
-          values.push(username);
-        }
-        if (email) {
-          updates.push("email = ?");
-          values.push(email);
-        }
-
-        if (updates.length > 0) {
-          await connection.execute(
-            `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
-            [...values, userId]
-          );
-        }
+      if (updateError) {
+        throw updateError;
       }
+    }
 
-      // Update depot staff details if provided
-      if (fullName || age || sex || contactNo) {
-        const updates = [];
-        const values = [];
-        if (fullName) {
-          updates.push("full_name = ?");
-          values.push(fullName);
-        }
-        if (age) {
-          updates.push("age = ?");
-          values.push(age);
-        }
-        if (sex) {
-          updates.push("sex = ?");
-          values.push(sex);
-        }
-        if (contactNo) {
-          updates.push("contact_no = ?");
-          values.push(contactNo);
-        }
+    // Update auth user if needed
+    if (Object.keys(authUpdates).length > 0) {
+      const { error: authUpdateError } =
+        await supabaseAdmin.auth.admin.updateUserById(userId, authUpdates);
 
-        if (updates.length > 0) {
-          await connection.execute(
-            `UPDATE depot_staff SET ${updates.join(", ")} WHERE user_id = ?`,
-            [...values, userId]
-          );
-        }
+      if (authUpdateError) {
+        throw authUpdateError;
       }
+    }
+
+    // Get updated user data
+    const { data: updatedProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    const { data: updatedAuthUser } =
+      await supabaseAdmin.auth.admin.getUserById(userId);
+
+    return NextResponse.json({
+      message: "Profile updated successfully",
+      user: {
+        id: userId,
+        username: updatedProfile.full_name,
+        email: updatedAuthUser.user.email,
+        full_name: updatedProfile.full_name,
+        age: updatedProfile.age,
+        sex: updatedProfile.sex,
+        contact_no: updatedProfile.contact_no,
+        department: updatedProfile.department,
+      },
     });
-
-    return NextResponse.json(
-      { message: "Profile updated successfully" },
-      { status: 200 }
-    );
   } catch (error) {
     console.error("Error updating depot staff profile:", error);
     return NextResponse.json(

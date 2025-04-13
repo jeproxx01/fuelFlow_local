@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { db } from "@/lib/db";
 
 export async function POST(req) {
   try {
@@ -16,62 +14,112 @@ export async function POST(req) {
       );
     }
 
-    // Get user from database
-    const [users] = await db.execute("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    // Initialize Supabase client
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
-    if (users.length === 0) {
+    // First attempt to sign in with the provided credentials
+    const { data: signInData, error: signInError } =
+      await supabase.auth.signInWithPassword({
+        email: username,
+        password: password,
+      });
+
+    console.log("Sign in response:", JSON.stringify(signInData, null, 2));
+    console.log("Sign in error:", signInError);
+
+    if (signInError) {
+      console.error("Sign in error:", signInError);
       return NextResponse.json(
         { message: "Invalid username or password" },
         { status: 401 }
       );
     }
 
-    const user = users[0];
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
+    if (!signInData.session) {
+      console.log("No session found in signInData");
       return NextResponse.json(
-        { message: "Invalid username or password" },
+        { message: "Authentication failed" },
         { status: 401 }
       );
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "1d" }
-    );
+    const userId = signInData.session.user.id;
+    console.log("Session user ID:", userId);
+    console.log("Session user email:", signInData.session.user.email);
 
-    // Set cookie
-    cookies().set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 86400, // 1 day
-      path: "/",
-    });
+    // Get user profile using the ID from auth
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
+    // If profile doesn't exist, create one
+    if (profileError && profileError.code === "PGRST116") {
+      console.log("Creating new profile for user:", userId);
+      const { data: newProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: userId,
+            full_name: signInData.session.user.email.split("@")[0],
+            role: "admin",
+            is_active: true,
+            registration_status: "Approved",
+          },
+        ])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Profile creation error:", createError);
+        return NextResponse.json(
+          { message: "Error creating user profile" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        message: "Login successful",
+        user: {
+          id: userId,
+          username: newProfile.full_name,
+          email: signInData.session.user.email,
+          role: newProfile.role,
+        },
+      });
+    }
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      return NextResponse.json(
+        { message: "Error fetching user profile" },
+        { status: 500 }
+      );
+    }
+
+    if (!profile) {
+      return NextResponse.json(
+        { message: "User profile not found" },
+        { status: 404 }
+      );
+    }
+
+    // Return user data
     return NextResponse.json({
       message: "Login successful",
       user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
+        id: userId,
+        username: profile.full_name,
+        email: signInData.session.user.email,
+        role: profile.role,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { message: "An error occurred during login" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

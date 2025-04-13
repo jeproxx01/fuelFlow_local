@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function POST(req) {
   try {
@@ -14,44 +25,78 @@ export async function POST(req) {
       );
     }
 
-    // Start a transaction
-    await db.transaction(async (connection) => {
-      // Check if username or email already exists
-      const [existingUsers] = await connection.execute(
-        "SELECT id FROM users WHERE username = ? OR email = ?",
-        [username, email]
-      );
+    try {
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            username,
+            depot_location,
+          },
+        });
 
-      if (existingUsers.length > 0) {
-        throw new Error("Username or email already exists");
+      if (authError) {
+        console.error("Auth creation error:", authError);
+        if (authError.message.includes("already registered")) {
+          return NextResponse.json(
+            { message: "Email already registered" },
+            { status: 409 }
+          );
+        }
+        throw authError;
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const userId = authData.user.id;
 
-      // Create user account
-      const [userResult] = await connection.execute(
-        "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-        [username, email, hashedPassword, "depot_staff"]
+      // Create profile in public.profiles table
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .insert({
+          id: userId,
+          full_name: username,
+          role: "Depot Staff",
+          is_active: true,
+          department: depot_location, // Assuming department column exists in profiles table
+        });
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        // Rollback: Delete the auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        throw profileError;
+      }
+
+      return NextResponse.json(
+        {
+          message: "Depot staff account created successfully",
+          user: {
+            id: userId,
+            username,
+            email,
+            role: "Depot Staff",
+            depot_location,
+          },
+        },
+        { status: 201 }
       );
+    } catch (error) {
+      console.error("Error during depot staff creation:", {
+        message: error.message,
+        stack: error.stack,
+      });
 
-      const userId = userResult.insertId;
-
-      // Create depot staff profile - using department instead of depot_location
-      await connection.execute(
-        "INSERT INTO depot_staff (user_id, department) VALUES (?, ?)",
-        [userId, depot_location]
+      return NextResponse.json(
+        { message: error.message || "Error creating account" },
+        { status: 500 }
       );
-    });
-
-    return NextResponse.json(
-      { message: "Depot staff account created successfully" },
-      { status: 201 }
-    );
+    }
   } catch (error) {
-    console.error("Error creating depot staff account:", error);
+    console.error("Unexpected error:", error);
     return NextResponse.json(
-      { message: error.message || "Failed to create depot staff account" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

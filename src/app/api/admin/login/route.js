@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { db } from "@/lib/db";
 
 export async function POST(req) {
   try {
@@ -16,56 +14,57 @@ export async function POST(req) {
       );
     }
 
-    // Get user from database
-    const [users] = await db.execute("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    // Initialize Supabase client with auth helpers
+    const supabase = createRouteHandlerClient({ cookies });
 
-    if (users.length === 0) {
+    // Sign in with password (using username as email)
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email: username, // Using username as email since Supabase uses email-based auth
+        password,
+      });
+
+    if (authError) {
+      console.error("Auth error:", authError);
       return NextResponse.json(
         { message: "Invalid username or password" },
         { status: 401 }
       );
     }
 
-    const user = users[0];
+    const userId = authData.user.id;
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Verify admin role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-    if (!isPasswordValid) {
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
       return NextResponse.json(
-        { message: "Invalid username or password" },
-        { status: 401 }
+        { message: "Error verifying user role" },
+        { status: 500 }
       );
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "1d" }
-    );
-
-    // Set cookie
-    cookies().set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 86400, // 1 day
-      path: "/",
-    });
+    if (profile.role !== "Greystar Manager (Admin)") {
+      // Sign out the user if they're not an admin
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        { message: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
 
     return NextResponse.json({
       message: "Login successful",
       user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
+        id: userId,
+        username: profile.full_name,
+        email: authData.user.email,
+        role: profile.role,
       },
     });
   } catch (error) {

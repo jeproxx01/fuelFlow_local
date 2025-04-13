@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
-import { db } from "@/lib/db";
 
 export async function GET(req) {
   try {
-    // Get token from cookies
-    const token = cookies().get("token")?.value;
+    // Initialize Supabase client with auth helpers
+    const supabase = createRouteHandlerClient({ cookies });
 
-    if (!token) {
-      console.log("No token found in cookies");
+    // Get the current session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      console.log("No session found");
       return NextResponse.json(
         { message: "Not authenticated" },
         {
@@ -22,18 +27,21 @@ export async function GET(req) {
       );
     }
 
-    // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your-secret-key"
-    );
+    const userId = session.user.id;
 
-    if (!decoded || !decoded.id) {
-      console.log("Invalid token payload:", decoded);
+    // Get user profile and verify admin role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
       return NextResponse.json(
-        { message: "Invalid token" },
+        { message: "Error fetching user profile" },
         {
-          status: 401,
+          status: 500,
           headers: {
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Origin": "*",
@@ -42,21 +50,12 @@ export async function GET(req) {
       );
     }
 
-    // Get fresh user data from database by joining users and admin tables
-    const [rows] = await db.execute(
-      `SELECT u.id, u.username, u.email, a.id as admin_id 
-       FROM users u 
-       INNER JOIN admin a ON u.id = a.user_id 
-       WHERE u.id = ? AND u.role = 'admin'`,
-      [decoded.id]
-    );
-
-    if (!rows || rows.length === 0) {
-      console.log("No admin found with id:", decoded.id);
+    if (profile.role !== "Greystar Manager (Admin)") {
+      console.log("User is not an admin:", userId);
       return NextResponse.json(
-        { message: "Admin not found" },
+        { message: "Unauthorized access" },
         {
-          status: 404,
+          status: 403,
           headers: {
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Origin": "*",
@@ -64,16 +63,14 @@ export async function GET(req) {
         }
       );
     }
-
-    const admin = rows[0];
 
     const response = NextResponse.json(
       {
         user: {
-          id: admin.id,
-          admin_id: admin.admin_id,
-          username: admin.username,
-          email: admin.email,
+          id: userId,
+          username: profile.full_name,
+          email: session.user.email,
+          role: profile.role,
         },
       },
       {
@@ -88,20 +85,6 @@ export async function GET(req) {
     return response;
   } catch (error) {
     console.error("Error in /me route:", error);
-
-    if (error.name === "JsonWebTokenError") {
-      return NextResponse.json(
-        { message: "Invalid token" },
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-
     return NextResponse.json(
       { message: "Internal server error" },
       {

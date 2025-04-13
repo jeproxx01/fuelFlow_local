@@ -1,11 +1,82 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Bell, User, Settings, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "react-hot-toast";
 
 export function Topbar({ toggleSidebar, isSidebarOpen }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [username, setUsername] = useState("Loading...");
+  const [error, setError] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/gas-station-owner/me", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/gas-station-owner/login");
+            return;
+          }
+          throw new Error(data.message || "Failed to fetch user data");
+        }
+
+        if (!data.user || !data.user.username) {
+          throw new Error("Invalid data format received");
+        }
+
+        if (isMounted) {
+          setUsername(data.user.username);
+          setError(null);
+        }
+      } catch (error) {
+        console.error("Error in fetchUserData:", error);
+        if (isMounted) {
+          setError(error.message || "Failed to load username");
+          setUsername("Error");
+        }
+      }
+    };
+
+    // Initial fetch with a delay to ensure cookie is set
+    const timer = setTimeout(() => {
+      fetchUserData();
+    }, 1000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [router]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -27,54 +98,69 @@ export function Topbar({ toggleSidebar, isSidebarOpen }) {
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 h-16 bg-gray-200 flex items-center justify-between px-6 transition-all duration-300 ${
-        isSidebarOpen ? "ml-64" : "ml-20"
-      }`}
+      className="fixed top-0 right-0 left-0 bg-white shadow-md z-40 transition-all duration-300"
+      style={{ left: isSidebarOpen ? "16rem" : "5rem" }}
     >
-      <button onClick={toggleSidebar} className="text-2xl">
-        ≡
-      </button>
-      <div className="flex items-center space-x-4 relative">
-        <span className="cursor-pointer">💬</span>
-        <div className="flex items-center space-x-2">
-          <div className="text-right">
-            <p className="font-bold">arthee01</p>
-            <p className="text-sm text-gray-600">gas-station-owner</p>
+      <div className="flex items-center justify-end h-16 px-4">
+        <div className="flex items-center space-x-6">
+          {/* Notification Bell */}
+          <div className="relative">
+            <Bell size={24} className="text-gray-600" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
+              1
+            </span>
           </div>
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="cursor-pointer"
-          >
-            👤
-          </button>
+
+          {/* Profile Section with Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center space-x-3 focus:outline-none"
+            >
+              <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-800 font-medium">
+                  {error ? `${username} (${error})` : username}
+                </span>
+                <span className="text-gray-500 text-sm">gas-station-owner</span>
+              </div>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                <Link
+                  href="/gas-station-owner/account"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  View Account
+                </Link>
+                <Link
+                  href="/gas-station-owner/settings"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Update Account
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowDropdown(false);
+                    handleLogout();
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        {isDropdownOpen && (
-          <ul className="absolute right-0 top-full mt-2 bg-white shadow-lg rounded-md py-2 w-48">
-            <li>
-              <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                Profile
-              </a>
-            </li>
-            <li>
-              <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                Change Password
-              </a>
-            </li>
-            <li>
-              <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                Settings
-              </a>
-            </li>
-            <li>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-              >
-                Log Out
-              </button>
-            </li>
-          </ul>
-        )}
       </div>
     </div>
   );

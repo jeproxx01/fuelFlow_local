@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { db } from "@/lib/db";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
 export async function POST(req) {
@@ -16,71 +14,60 @@ export async function POST(req) {
       );
     }
 
-    // Get user from database
-    const [users] = await db.execute(
-      "SELECT * FROM users WHERE username = ? AND role = 'depot_staff'",
-      [username]
-    );
+    // Initialize Supabase client with auth helpers
+    const supabase = createRouteHandlerClient({ cookies });
 
-    if (users.length === 0) {
+    // Sign in with password (using username as email)
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email: username, // Using username as email since Supabase uses email-based auth
+        password,
+      });
+
+    if (authError) {
+      console.error("Auth error:", authError);
       return NextResponse.json(
         { message: "Invalid username or password" },
         { status: 401 }
       );
     }
 
-    const user = users[0];
+    const userId = authData.user.id;
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Verify depot staff role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-    if (!isPasswordValid) {
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      // Sign out the user since they're not authorized
+      await supabase.auth.signOut();
       return NextResponse.json(
-        { message: "Invalid username or password" },
-        { status: 401 }
+        { message: "Error verifying user role" },
+        { status: 500 }
       );
     }
 
-    // Get depot staff details
-    const [depotStaff] = await db.execute(
-      "SELECT * FROM depot_staff WHERE user_id = ?",
-      [user.id]
-    );
-
-    if (depotStaff.length === 0) {
+    if (profile.role !== "Depot Staff") {
+      // Sign out the user if they're not a depot staff
+      await supabase.auth.signOut();
       return NextResponse.json(
-        { message: "Depot staff profile not found" },
-        { status: 404 }
+        { message: "Unauthorized access" },
+        { status: 403 }
       );
     }
-
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "1d" }
-    );
-
-    // Set cookie
-    cookies().set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 86400, // 1 day
-      path: "/",
-    });
 
     return NextResponse.json({
       message: "Login successful",
       user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        department: depotStaff[0].department,
+        id: userId,
+        username: profile.full_name,
+        email: authData.user.email,
+        role: profile.role,
+        department: profile.department,
       },
     });
   } catch (error) {

@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
-import mysql from "mysql2/promise";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function POST(req) {
-  // Create a new connection from the pool
-  const connection = await mysql.createConnection({
-    host: process.env.MYSQL_HOST || "localhost",
-    user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || "",
-    database: process.env.MYSQL_DATABASE || "fuelflow",
-  });
-
   try {
     const body = await req.json();
     const { username, email, password } = body;
@@ -20,98 +22,81 @@ export async function POST(req) {
 
     // Basic validation
     if (!username || !email || !password) {
-      await connection.end();
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // Check if email already exists in users table
-    const [existingUsers] = await connection.execute(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-
-    console.log("Existing users check result:", existingUsers);
-
-    if (existingUsers && existingUsers.length > 0) {
-      await connection.end();
-      return NextResponse.json(
-        { message: "Email already registered" },
-        { status: 409 }
-      );
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     try {
-      // Start transaction
-      await connection.beginTransaction();
-      console.log("Transaction started");
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            username,
+          },
+        });
 
-      // Create user first
-      const [userResult] = await connection.execute(
-        "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-        [username, email, hashedPassword, "admin"]
-      );
-
-      console.log("User created with ID:", userResult.insertId);
-
-      if (!userResult || !userResult.insertId) {
-        throw new Error("Failed to create user");
+      if (authError) {
+        console.error("Auth creation error:", authError);
+        if (authError.message.includes("already registered")) {
+          return NextResponse.json(
+            { message: "Email already registered" },
+            { status: 409 }
+          );
+        }
+        throw authError;
       }
 
-      // Create admin entry
-      const [adminResult] = await connection.execute(
-        "INSERT INTO admin (user_id) VALUES (?)",
-        [userResult.insertId]
-      );
+      const userId = authData.user.id;
 
-      console.log("Admin entry created:", adminResult);
+      // Create profile in public.profiles table
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .insert({
+          id: userId,
+          full_name: username,
+          role: "Greystar Manager (Admin)",
+          is_active: true,
+        });
 
-      // Commit transaction
-      await connection.commit();
-      console.log("Transaction committed");
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        // Rollback: Delete the auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        throw profileError;
+      }
 
-      await connection.end();
       return NextResponse.json(
         {
           message: "Admin account created successfully",
           user: {
-            id: userResult.insertId,
+            id: userId,
             username,
             email,
+            role: "Greystar Manager (Admin)",
           },
         },
         { status: 201 }
       );
     } catch (error) {
-      // Rollback transaction on error
-      console.error("Error during transaction:", error);
-      await connection.rollback();
-      throw error;
-    }
-  } catch (error) {
-    console.error("Error creating admin account:", {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-    });
+      console.error("Error during admin creation:", {
+        message: error.message,
+        stack: error.stack,
+      });
 
-    await connection.end();
-
-    // Check for specific MySQL errors
-    if (error.code === "ER_DUP_ENTRY") {
       return NextResponse.json(
-        { message: "Email already registered" },
-        { status: 409 }
+        { message: error.message || "Error creating account" },
+        { status: 500 }
       );
     }
-
+  } catch (error) {
+    console.error("Unexpected error:", error);
     return NextResponse.json(
-      { message: error.message || "Error creating account" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

@@ -29,13 +29,13 @@ export default function Home() {
                     href="/login"
                     className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-md text-center transition-colors"
                   >
-                    Get Started
+                    Log In
                   </Link>
                   <Link
                     href="#"
                     className="bg-transparent hover:bg-white/10 border border-white text-white font-bold py-3 px-6 rounded-md text-center transition-colors"
                   >
-                    Book a Demo
+                    Sign Up
                   </Link>
                 </div>
               </div>
